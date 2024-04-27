@@ -11,7 +11,7 @@ pub struct ActiveWorkspace {
 
 pub fn get_by_id(id: i16) -> Monitor {
     let mut monitors = get();
-    monitors.find(|m| m.id == id).unwrap()
+    monitors.find(|m| m.id == id.into()).unwrap()
 }
 
 pub fn get() -> Monitors {

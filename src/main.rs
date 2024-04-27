@@ -13,6 +13,10 @@ use hyprland::{
     dispatch::Direction,
 };
 
+use hyprland::data::*;
+use hyprland::prelude::*;
+use hyprland::shared::HResult;
+
 use hyprland_ipc::{client, monitor, option, workspace};
 
 pub fn get_current_monitor() -> Monitor {
@@ -25,7 +29,7 @@ fn detect_order() -> Vec<i16>{
         order.push(i)
     } 
     order.sort_by_key(|a| a.x);
-    let ordered_ids : Vec<i16 >= order.iter().map(|mon| mon.id).collect();
+    let ordered_ids : Vec<i16 >= order.iter().map(|mon| mon.id as i16).collect();
     return ordered_ids;
 }
 
@@ -93,13 +97,13 @@ fn main() {
         },
         "l" | "r" => {
        		// move the focus to the left monitor
-       		let id = get_target(order, current.into(), &args[1]);
+       		let id = get_target(order, current.try_into().unwrap(), &args[1]);
             focus(&(id as u64));
         },
         "m" | "catch" => {
         	// move the focused window to the left or right monitor and follow it
         	if args[2] == "r" || args[2] == "l" {
-        	    let id = get_target(order, current.into(), &args[2]);
+        	    let id = get_target(order, current.try_into().unwrap(), &args[2]);
         	    // Command::new("hyprctl").arg(format!("dispatch movetoworkspace {id}")).output().expect("fasz").stdout.as_slice();
                 move_focus(&(id as u64));
         	}
@@ -108,7 +112,7 @@ fn main() {
         	// move the focused window to the left or right monitor but dont follow it
         	if args[2] == "r" || args[2] == "l" {
         	    // let old_id = get_by_id(current).active_workspace.id;
-        	    let id = get_target(order, current.into(), &args[2]);
+        	    let id = get_target(order, current.try_into().unwrap(), &args[2]);
         	    // Command::new("hyprctl").arg(format!("dispatch movetoworkspace {id}")).output().expect("fasz").stdout.as_slice();
         	    // Command::new("hyprctl").arg(format!("dispatch workspace {old_id}")).output().expect("fasz").stdout.as_slice();
                 move_to(&(id as u64));
@@ -117,8 +121,8 @@ fn main() {
         "w" | "pull" => {
         	// move the focused window to the next of prev workspace on that monitor and follow it
         	if args[2] == "r" || args[2] == "l" {
-        	    let mut id = get_by_id(current).active_workspace.id;
-        	    if ((current)*10+1..current*10+11).contains(&(id as i16)) {
+        	    let mut id = get_by_id(current.try_into().unwrap()).active_workspace.id;
+        	    if ((current)*10+1..current*10+11).contains(&(id as i128)) {
         	        if args[2] == "r" {
         	            id = id+1
         	        } else {
@@ -133,9 +137,9 @@ fn main() {
             // move the window to the next or prev workspace on the current monitor and dont follow
             // it with the focus
         	if args[2] == "r" || args[2] == "l" {
-        	    let mut id = get_by_id(current).active_workspace.id;
+        	    let mut id = get_by_id(current as i16).active_workspace.id;
         	    // let old_id = id;
-        	    if ((current)*10+1..current*10+11).contains(&(id as i16)) {
+        	    if ((current)*10+1..current*10+11).contains(&(id as i128)) {
         	        if args[2] == "r" {
         	            id = id+1
         	        } else {
@@ -146,6 +150,28 @@ fn main() {
                 	move_to(&(id as u64));
         	    }
         	}
+        },
+        "replace" => {
+			// replaces the clients on two workspaces on two monitors
+            if args[2] == "r" || args[2] == "l" {
+                let id = get_target(order, current.try_into().unwrap(), &args[2]);
+				let mut  current_clients: Vec<Client> = Vec::new();
+				let mut target_clients: Vec<Client> = Vec::new();
+
+                let clients = Clients::get().unwrap();
+                for i in clients {
+                    if i.workspace.id == id as i32 {
+						target_clients.push(i)
+                    } else if i.workspace.id == get_by_id(current.try_into().unwrap()).active_workspace.id as i32 {
+                        current_clients.push(i)
+                    }
+                }
+                println!("targets {:?}", target_clients);
+                println!("currents {:?}", current_clients);
+                for mut i in target_clients{
+                    i.workspace.id = get_by_id(current.try_into().unwrap()).active_workspace.id as i32;
+                }
+            }
         },
         "d" => {
             println!("{:?}", detect_order());
