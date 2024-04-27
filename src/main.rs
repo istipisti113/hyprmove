@@ -6,6 +6,8 @@ use std::env;
 use std::process::Command;
 
 mod hyprland_ipc;
+use crate::workspace::*;
+
 use hyprland::{
     data::{Client, Monitor, Transforms},
     dispatch::Direction,
@@ -92,22 +94,25 @@ fn main() {
         "l" | "r" => {
        		// move the focus to the left monitor
        		let id = get_target(order, current.into(), &args[1]);
-       		Command::new("hyprctl").arg(format!("dispatch workspace {id}")).output().expect("fasz").stdout.as_slice();
+            focus(&(id as u64));
         },
         "m" => {
         	// move the focused window to the left or right monitor and follow it
         	if args[2] == "r" || args[2] == "l" {
         	    let id = get_target(order, current.into(), &args[2]);
-        	    Command::new("hyprctl").arg(format!("dispatch movetoworkspace {id}")).output().expect("fasz").stdout.as_slice();
+        	    // Command::new("hyprctl").arg(format!("dispatch movetoworkspace {id}")).output().expect("fasz").stdout.as_slice();
+                move_to(&(id as u64));
+            	focus(&(id as u64));
         	}
         },
         "n" => {
         	// move the focused window to the left or right monitor but dont follow it
         	if args[2] == "r" || args[2] == "l" {
-        	    let old_id = get_by_id(current).active_workspace.id;
+        	    // let old_id = get_by_id(current).active_workspace.id;
         	    let id = get_target(order, current.into(), &args[2]);
-        	    Command::new("hyprctl").arg(format!("dispatch movetoworkspace {id}")).output().expect("fasz").stdout.as_slice();
-        	    Command::new("hyprctl").arg(format!("dispatch workspace {old_id}")).output().expect("fasz").stdout.as_slice();
+        	    // Command::new("hyprctl").arg(format!("dispatch movetoworkspace {id}")).output().expect("fasz").stdout.as_slice();
+        	    // Command::new("hyprctl").arg(format!("dispatch workspace {old_id}")).output().expect("fasz").stdout.as_slice();
+                move_to(&(id as u64));
         	}
         },
         "w" => {
@@ -120,22 +125,25 @@ fn main() {
         	        } else {
         	            id = id-1
         	        }
-        	        Command::new("hyprctl").arg(format!("dispatch movetoworkspace {id}")).output().expect("fasz").stdout.as_slice();
+        	        // Command::new("hyprctl").arg(format!("dispatch movetoworkspace {id}")).output().expect("fasz").stdout.as_slice();
+                	move_to(&(id as u64));
+                    focus(&(id as u64))
         	    }
         	}
         },
 		"b" => {
         	if args[2] == "r" || args[2] == "l" {
         	    let mut id = get_by_id(current).active_workspace.id;
-        	    let old_id = id;
+        	    // let old_id = id;
         	    if ((current)*10+1..current*10+11).contains(&(id as i16)) {
         	        if args[2] == "r" {
         	            id = id+1
         	        } else {
         	            id = id-1
         	        }
-        	        Command::new("hyprctl").arg(format!("dispatch movetoworkspace {id}")).output().expect("fasz").stdout.as_slice();
-        	        Command::new("hyprctl").arg(format!("dispatch workspace {old_id}")).output().expect("fasz").stdout.as_slice();
+        	        // Command::new("hyprctl").arg(format!("dispatch movetoworkspace {id}")).output().expect("fasz").stdout.as_slice();
+        	        // Command::new("hyprctl").arg(format!("dispatch workspace {old_id}")).output().expect("fasz").stdout.as_slice();
+                	move_to(&(id as u64));
         	    }
         	}
         },
