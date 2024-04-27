@@ -96,16 +96,15 @@ fn main() {
        		let id = get_target(order, current.into(), &args[1]);
             focus(&(id as u64));
         },
-        "m" => {
+        "m" | "catch" => {
         	// move the focused window to the left or right monitor and follow it
         	if args[2] == "r" || args[2] == "l" {
         	    let id = get_target(order, current.into(), &args[2]);
         	    // Command::new("hyprctl").arg(format!("dispatch movetoworkspace {id}")).output().expect("fasz").stdout.as_slice();
-                move_to(&(id as u64));
-            	focus(&(id as u64));
+                move_focus(&(id as u64));
         	}
         },
-        "n" => {
+        "n" | "throw" => {
         	// move the focused window to the left or right monitor but dont follow it
         	if args[2] == "r" || args[2] == "l" {
         	    // let old_id = get_by_id(current).active_workspace.id;
@@ -115,7 +114,7 @@ fn main() {
                 move_to(&(id as u64));
         	}
         },
-        "w" => {
+        "w" | "pull" => {
         	// move the focused window to the next of prev workspace on that monitor and follow it
         	if args[2] == "r" || args[2] == "l" {
         	    let mut id = get_by_id(current).active_workspace.id;
@@ -126,12 +125,13 @@ fn main() {
         	            id = id-1
         	        }
         	        // Command::new("hyprctl").arg(format!("dispatch movetoworkspace {id}")).output().expect("fasz").stdout.as_slice();
-                	move_to(&(id as u64));
-                    focus(&(id as u64))
+                	move_focus(&(id as u64));
         	    }
         	}
         },
-		"b" => {
+		"b" | "push" => {
+            // move the window to the next or prev workspace on the current monitor and dont follow
+            // it with the focus
         	if args[2] == "r" || args[2] == "l" {
         	    let mut id = get_by_id(current).active_workspace.id;
         	    // let old_id = id;
